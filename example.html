@@ -4,13 +4,16 @@
     <title>Just Another JavaScript Calendar</title>
     <script src="js/lib/prototype.js"></script>
     <script src="js/calendar.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/example.css">
+    <link rel="stylesheet" type="text/css" href="css/calendar.css">
 </head>
 <body>
+    <div id="jajc-calendar-container" class="jajc-calendar-white"></div>
     <script>
-        var calendar = new Calendar({
+        var calendar = new JustCalendar({
             calendars:3
         });
-        document.body.appendChild(calendar.getCalendar());
+        $('jajc-calendar-container').appendChild(calendar.getCalendar());
     </script>
 </body>
 </html>

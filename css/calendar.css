@@ -1,0 +1,40 @@
+table.jajc-calendar {
+    margin:0 5px;
+    cursor:default;
+    border-collapse: collapse;
+}
+table.jajc-calendar tbody td,
+table.jajc-calendar thead th{
+    margin: 0;
+    padding: 0;
+    width:22px;
+    height:16px;
+    text-align: center;
+    color:#999;
+}
+table.jajc-calendar thead th {
+    font-weight: normal;
+    border-bottom:1px solid #ccc;
+    color:#333;
+}
+table.jajc-calendar tbody td .scope {
+    color:#000;
+}
+table.jajc-calendar .calendar-btn span {
+    text-indent: -1000px;
+    overflow:hidden;
+    display:block;
+}
+table.jajc-calendar .month-name {
+    text-align:center;
+}
+
+.jajc-calendar-white {
+    border:1px solid #ccc;
+    background: #fff;
+    border-radius: 5px;
+}
+#jajc-calendar-container {
+    margin-top:10px;
+    float:left;
+}

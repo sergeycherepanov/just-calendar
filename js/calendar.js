@@ -5,7 +5,7 @@
  * @license:   http://www.gnu.org/licenses/gpl.html GNU GENERAL PUBLIC LICENSE v3.0
  */
 
-var CalendarException = Class.create({
+var JustCalendarException = Class.create({
     message:"",
     initialize: function(message)
     {
@@ -17,12 +17,13 @@ var CalendarException = Class.create({
     }
 });
 
-var Calendar = Class.create({
+var JustCalendar = Class.create({
     options:null,
     defaults:{
-        monthNames:     ["January", "February", "March", "April", "May", "June", "Jule", "August", "September", "October", "November", "December"],
-        startDate:      new Date(),
-        calendars:      1,
+        monthNames:      ["January", "February", "March", "April", "May", "June", "Jule", "August", "September", "October", "November", "December"],
+        dayNames:        ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
+        startDate:       new Date(),
+        calendars:       1,
         onClick:         function() {},
         onMouseOver:     function() {},
         onCellRender:    function() {},
@@ -38,11 +39,17 @@ var Calendar = Class.create({
         if (options) {
             Object.extend(this.options, options);
         }
+        if (!this.options.startDate || !this.options.startDate instanceof Date) {
+            throw new JustCalendarException("Start Date is not defined or incorrect!");
+        } else {
+            // Rest to first day of month
+            this.options.startDate.setDate(1);
+        }
     },
     // Retrieve new instance of cell class
     getNewCell: function(cellDate, scopeDate)
     {
-        return new CalendarCell({
+        return new JustCalendarCell({
             calendarInstance: this,
             cellDate:    new Date(cellDate.getTime()),
             scopeDate:   new Date(scopeDate.getTime()),
@@ -55,13 +62,19 @@ var Calendar = Class.create({
     // Render calendar view
     getCalendar: function()
     {
-        var container = document.createElement('div');
+        var table = document.createElement('table');
+        var tr    = document.createElement('tr');
+
+        table.setAttribute('class', 'jajc-calendar-wrapper');
         var date      = this.getStartDate();
         for (var i = 0; i < this.options.calendars; i++) {
-            container.appendChild(this.render(date, 0 == i, (i+1 == this.options.calendars)));
+            var td    = document.createElement('td');
+            td.appendChild(this.render(date, 0 == i, (i+1 == this.options.calendars)));
+            tr.appendChild(td);
             date.setMonth(date.getMonth()+1);
         }
-        return container;
+        table.appendChild(tr);
+        return table;
     },
     // Render single calendar view
     render: function(date, showPrevBtn, showNextBtn)
@@ -73,6 +86,8 @@ var Calendar = Class.create({
         var thead = this.renderHead(date, showPrevBtn, showNextBtn)
         var tfoot = document.createElement('tfoot');
         var tbody = document.createElement('tbody');
+
+        table.setAttribute('class', 'jajc-calendar');
 
         for (var week in month) {
             var tr = document.createElement('tr');
@@ -90,31 +105,46 @@ var Calendar = Class.create({
     },
     renderHead: function(date, showPrevBtn, showNextBtn)
     {
-        showPrevBtn = 'undefined' == typeof showPrevBtn ? true : showPrevBtn;
-        showNextBtn = 'undefined' == typeof showNextBtn ? true : showNextBtn;
+        showPrevBtn  = 'undefined' == typeof showPrevBtn ? true : showPrevBtn;
+        showNextBtn  = 'undefined' == typeof showNextBtn ? true : showNextBtn;
 
-        var thead   = document.createElement('thead');
-        var prevTd  = document.createElement('td');
-        var monthTd = document.createElement('td');
-        var nextTd  = document.createElement('td');
+        var thead    = document.createElement('thead');
+        var firstTr  = document.createElement('tr');
+        var secondTr = document.createElement('tr');
+        var prevTd   = document.createElement('td');
+        var monthTd  = document.createElement('td');
+        var nextTd   = document.createElement('td');
 
         if (showPrevBtn) {
-            prevTd.setAttribute("class", "btn-prev");
-            prevTd.innerHTML = "Previous";
+            var prevBtn = document.createElement('span');
+            prevBtn.innerHTML = "Previous";
+            prevTd.setAttribute("class", "calendar-btn btn-prev");
+            prevTd.appendChild(prevBtn);
         }
 
         if (showNextBtn) {
-            nextTd.setAttribute("class", "btn-next");
-            nextTd.innerHTML = "Next";
+            var nextBtn = document.createElement('span');
+            nextBtn.innerHTML = "Next";
+            nextTd.setAttribute("class", "calendar-btn btn-next");
+            nextTd.appendChild(nextBtn);
         }
 
         monthTd.setAttribute("class", "month-name");
         monthTd.setAttribute("colspan", "5");
         monthTd.innerHTML = this.options.monthNames[date.getMonth()];
 
-        thead.appendChild(prevTd);
-        thead.appendChild(monthTd);
-        thead.appendChild(nextTd);
+        firstTr.appendChild(prevTd);
+        firstTr.appendChild(monthTd);
+        firstTr.appendChild(nextTd);
+
+        for (var i = 0; i < 7; i ++) {
+            var th = document.createElement('th');
+            th.innerHTML = this.options.dayNames[i];
+            secondTr.appendChild(th);
+        }
+
+        thead.appendChild(firstTr);
+        thead.appendChild(secondTr);
 
         return thead;
     },
@@ -156,7 +186,7 @@ var Calendar = Class.create({
 
 
 // Renderer for calendar cell
-var CalendarCell = Class.create({
+var JustCalendarCell = Class.create({
     options:null,
     defaults: {
         calendarInstance: null,
@@ -179,10 +209,10 @@ var CalendarCell = Class.create({
         var cellDate  = this.options.cellDate;
         var scopeDate = this.options.scopeDate;
         if (!cellDate || !cellDate instanceof Date) {
-            throw new CalendarException("Cell Date is not defined or incorrect!");
+            throw new JustCalendarException("Cell Date is not defined or incorrect!");
         }
         if (!scopeDate || !scopeDate instanceof Date) {
-            throw new CalendarException("Scope Date for cell not defined or incorrect!");
+            throw new JustCalendarException("Scope Date for cell not defined or incorrect!");
         }
         if (cellDate.getMonth() == scopeDate.getMonth()) {
             this.inScope = true;
