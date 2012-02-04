@@ -11,9 +11,10 @@
     <div id="jajc-calendar-container" class="jajc-calendar-white"></div>
     <script>
         var calendar = new JustCalendar({
-            calendars:3
+            calendars:5,
+            container:$('jajc-calendar-container')
         });
-        $('jajc-calendar-container').appendChild(calendar.getCalendar());
+
     </script>
 </body>
 </html>

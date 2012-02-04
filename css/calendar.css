@@ -24,6 +24,14 @@ table.jajc-calendar .calendar-btn span {
     text-indent: -1000px;
     overflow:hidden;
     display:block;
+    cursor:pointer;
+}
+table.jajc-calendar .btn-prev span{
+    background:url('../images/calendar-prev.png') 50% 50% no-repeat;
+
+}
+table.jajc-calendar .btn-next span{
+    background:url('../images/calendar-next.png') 50% 50% no-repeat;
 }
 table.jajc-calendar .month-name {
     text-align:center;

@@ -19,24 +19,36 @@ var JustCalendarException = Class.create({
 
 var JustCalendar = Class.create({
     options:null,
+    data:null,
+    date:null,
     defaults:{
         monthNames:      ["January", "February", "March", "April", "May", "June", "Jule", "August", "September", "October", "November", "December"],
         dayNames:        ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
+        container:       null, // DOM element
         startDate:       new Date(),
         calendars:       1,
-        onClick:         function() {},
-        onMouseOver:     function() {},
-        onCellRender:    function() {},
-        onCellClick:     function() {},
-        onCellMouseOver: function() {},
-        onCellMouseOut:  function() {}
+        onRender:        function(table, date) {},
+        onCellRender:    function(cellContainer, cellDate, scopeDate) {},
+        data:            null
+    },
+    setData:function(key, value) {
+        this.data[key] = value;
+        return this;
+    },
+    getData:function(key) {
+        return this.data[key];
     },
     // Class constructor
     initialize: function(options)
     {
         this.options = {};
+        this.data    = {};
         Object.extend(this.options, this.defaults);
         if (options) {
+            if (options['data']) {
+                Object.extend(this.data, options['data']);
+                delete options['data'];
+            }
             Object.extend(this.options, options);
         }
         if (!this.options.startDate || !this.options.startDate instanceof Date) {
@@ -45,6 +57,8 @@ var JustCalendar = Class.create({
             // Rest to first day of month
             this.options.startDate.setDate(1);
         }
+        this.render();
+        return this;
     },
     // Retrieve new instance of cell class
     getNewCell: function(cellDate, scopeDate)
@@ -53,34 +67,43 @@ var JustCalendar = Class.create({
             calendarInstance: this,
             cellDate:    new Date(cellDate.getTime()),
             scopeDate:   new Date(scopeDate.getTime()),
-            onClick:     this.options.onCellClick,
-            onMouseOver: this.options.onCellMouseOver,
-            onMouseOut:  this.options.onCellMouseOut,
             onRender:    this.options.onCellRender
         });
     },
     // Render calendar view
-    getCalendar: function()
+    render: function()
     {
+        var container = this.options.container;
+        while (container.hasChildNodes()) {
+            container.removeChild(container.firstChild);
+        }
+        var date  = new Date(this.getStartDate().getTime());
         var table = document.createElement('table');
         var tr    = document.createElement('tr');
-
-        table.setAttribute('class', 'jajc-calendar-wrapper');
-        var date      = this.getStartDate();
         for (var i = 0; i < this.options.calendars; i++) {
-            var td    = document.createElement('td');
-            td.appendChild(this.render(date, 0 == i, (i+1 == this.options.calendars)));
+            var td = document.createElement('td');
+            td.appendChild(this.renderCalendar(date, 0 == i, (i+1 == this.options.calendars)));
             tr.appendChild(td);
             date.setMonth(date.getMonth()+1);
         }
         table.appendChild(tr);
-        return table;
+        table.setAttribute('class', 'jajc-calendar-wrapper');
+        container.appendChild(table);
+    },
+    previous:function()
+    {
+        this.date.setMonth(this.date.getMonth() - this.options.calendars);
+        this.render();
+    },
+    next:function()
+    {
+        this.date.setMonth(this.date.getMonth() + this.options.calendars);
+        this.render();
     },
     // Render single calendar view
-    render: function(date, showPrevBtn, showNextBtn)
+    renderCalendar: function(date, showPrevBtn, showNextBtn)
     {
         var month = this.getMonthMatrix(date);
-
         // Initialize DOM elements
         var table = document.createElement('table');
         var thead = this.renderHead(date, showPrevBtn, showNextBtn)
@@ -101,6 +124,9 @@ var JustCalendar = Class.create({
         table.appendChild(thead);
         table.appendChild(tfoot);
         table.appendChild(tbody);
+        if (this.options.onRender instanceof Function) {
+            this.options.onRender.apply(this, [table, date]);
+        }
         return table;
     },
     renderHead: function(date, showPrevBtn, showNextBtn)
@@ -118,6 +144,7 @@ var JustCalendar = Class.create({
         if (showPrevBtn) {
             var prevBtn = document.createElement('span');
             prevBtn.innerHTML = "Previous";
+            prevBtn.onclick = this.previous.bind(this);
             prevTd.setAttribute("class", "calendar-btn btn-prev");
             prevTd.appendChild(prevBtn);
         }
@@ -125,14 +152,14 @@ var JustCalendar = Class.create({
         if (showNextBtn) {
             var nextBtn = document.createElement('span');
             nextBtn.innerHTML = "Next";
+            nextBtn.onclick = this.next.bind(this);
             nextTd.setAttribute("class", "calendar-btn btn-next");
             nextTd.appendChild(nextBtn);
         }
 
         monthTd.setAttribute("class", "month-name");
         monthTd.setAttribute("colspan", "5");
-        monthTd.innerHTML = this.options.monthNames[date.getMonth()];
-
+        monthTd.innerHTML = this.options.monthNames[date.getMonth()] + " - " + date.getFullYear();
         firstTr.appendChild(prevTd);
         firstTr.appendChild(monthTd);
         firstTr.appendChild(nextTd);
@@ -151,7 +178,10 @@ var JustCalendar = Class.create({
     // Date of begin render
     getStartDate: function()
     {
-        return this.options.startDate || new Date();
+        if (!this.date) {
+            this.date = this.options.startDate || new Date()
+        }
+        return this.date;
     },
     // Retrieve month data
     getMonthMatrix: function(startDate)
@@ -165,7 +195,6 @@ var JustCalendar = Class.create({
             date.setDate(date.getDate() - date.getDay());
         }
         var month = {};
-        var j = 0;
         for (var week = 0; week < 6; week++) {
             if (!month[week]) {
                 month[week] = {}
@@ -192,12 +221,10 @@ var JustCalendarCell = Class.create({
         calendarInstance: null,
         cellDate:         null,
         scopeDate:        null,
-        onClick:     function() {},
-        onMouseOver: function() {},
-        onMouseOut:  function() {},
-        onRender:    function() {}
+        onRender:         function(container, cellDate, scopeDate) {}
     },
     inScope:false,
+    element:null, // Related DOM element
     // Class constructor
     initialize:  function(options)
     {
@@ -218,20 +245,32 @@ var JustCalendarCell = Class.create({
             this.inScope = true;
         }
     },
+    setData:function(key, value) {
+        this.options.calendarInstance.setData(key, value);
+        return this;
+    },
+    getData:function(key) {
+        return this.options.calendarInstance.getData(key);
+    },
+    // Retrieve cell date
     getDate: function ()
     {
         return this.options.cellDate;
     },
+    // Retrieve scope date
     getScopeDate: function ()
     {
         return this.options.scopeDate;
     },
+    // Render day
     render: function ()
     {
         var container = document.createElement('div');
         var span      = document.createElement('span');
+
+        this.element = container;
         if (this.inScope) {
-            container.addClassName('scope')
+            container.setAttribute('class', 'scope')
         }
         span.innerHTML = this.getDate().getDate();
         container.appendChild(span);
@@ -239,6 +278,7 @@ var JustCalendarCell = Class.create({
         if (this.options.onRender instanceof Function) {
             this.options.onRender.apply(this, [container, this.getDate(), this.getScopeDate()]);
         }
+
         return container;
     }
 });
