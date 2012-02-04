@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Just Calendar (JavaScript)</title>
+    <link rel="stylesheet" type="text/css" href="css/example.css">
+    <link rel="stylesheet" type="text/css" href="https://raw.github.com/SergeyCherepanov/just-calendar/master/css/calendar.css">
+    <script src="js/prototype.js"></script>
+    <script src="https://raw.github.com/SergeyCherepanov/just-calendar/master/js/calendar.js"></script>
+</head>
+<body>
+    <div id="jajc-calendar-container" class="jajc-calendar-white"></div>
+    <script type="text/javascript">
+        var calendar = new JustCalendar({
+            container:$('jajc-calendar-container'),
+            startDate: new Date(),
+            calendars:3
+        });
+    </script>
+</body>
+</html>
