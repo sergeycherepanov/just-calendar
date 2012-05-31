@@ -22,7 +22,7 @@ var JustCalendar = Class.create({
     data:null,
     date:null,
     defaults:{
-        monthNames:      ["January", "February", "March", "April", "May", "June", "Jule", "August", "September", "October", "November", "December"],
+        monthNames:      ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
         dayNames:        ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
         container:       null, // DOM element
         startDate:       new Date(),
