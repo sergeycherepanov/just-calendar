@@ -36,13 +36,8 @@ table.jajc-calendar .btn-next span{
 table.jajc-calendar .month-name {
     text-align:center;
 }
-
 .jajc-calendar-white {
     border:1px solid #ccc;
     background: #fff;
     border-radius: 5px;
-}
-#jajc-calendar-container {
-    margin-top:10px;
-    float:left;
 }

@@ -3,3 +3,12 @@ body {
     font-size:13px;
     line-height:150%;
 }
+.jajc-container {
+    margin-bottom:10px;
+    clear:all;
+    float:left;
+}
+#calendar-example-one {
+    clear:left;
+    margin-right:10px;
+}
