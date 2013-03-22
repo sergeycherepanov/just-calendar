@@ -5,51 +5,62 @@
  * @license:   http://www.gnu.org/licenses/gpl.html GNU GENERAL PUBLIC LICENSE v3.0
  */
 
-var JustCalendarException = Class.create({
-    message:"",
-    initialize: function(message)
+var JustCalendarException = function() 
+{
+    /**
+     * Class constructor
+     * @param message string
+     */
+    this.constructor = function(message) 
     {
-        this.message = message;
-    },
-    getMessage: function()
+        this.message = message ? message : "";
+    };
+    
+    /**
+     * Retrieve message
+     * @returns string
+     */
+    this.getMessage = function()
     {
         return this.message;
-    }
-});
+    };
 
-var JustCalendar = Class.create({
-    options:null,
-    data:null,
-    date:null,
-    defaults:{
-        monthNames:      ["January", "February", "March", "April", "May", "June", "Jule", "August", "September", "October", "November", "December"],
-        dayNames:        ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
-        container:       null, // DOM element
-        startDate:       new Date(),
-        calendars:       1,
-        onRender:        function(table, date) {},
-        onCellRender:    function(cellContainer, cellDate, scopeDate) {},
-        data:            null
-    },
-    setData:function(key, value) {
-        this.data[key] = value;
-        return this;
-    },
-    getData:function(key) {
-        return this.data[key];
-    },
-    // Class constructor
-    initialize: function(options)
+    /**
+     * Call constructor
+     */
+    this.constructor.apply(this, arguments);
+};
+
+var JustCalendar = function()
+{
+    /**
+     * Class constructor
+     * @param options array
+     */
+    this.constructor = function(options)
     {
-        this.options = {};
-        this.data    = {};
-        Object.extend(this.options, this.defaults);
+        this.options = {
+            monthNames:      ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+            dayNames:        ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
+            container:       null, // DOM element
+            startDate:       new Date(),
+            calendars:       1,
+            onRender:        function(table, date) {},
+            onCellRender:    function(cellContainer, cellDate, scopeDate) {},
+            data:            null
+        };
+        this.data = {};
+        this.date = null;
         if (options) {
             if (options['data']) {
-                Object.extend(this.data, options['data']);
+                for (var property in options['data']) {
+                    this.data[property] = options['data'][property];
+                }
                 delete options['data'];
             }
-            Object.extend(this.options, options);
+            for (var property in options) {
+                this.options[property] = options[property];
+            }
         }
         if (!this.options.startDate || !this.options.startDate instanceof Date) {
             throw new JustCalendarException("Start Date is not defined or incorrect!");
@@ -58,10 +69,38 @@ var JustCalendar = Class.create({
             this.options.startDate.setDate(1);
         }
         this.render();
+    };
+
+    /**
+     * Set data value
+     * 
+     * @param key string
+     * @param value mixed
+     * @returns JustCalendar
+     */
+    this.setData = function(key, value) {
+        this.data[key] = value;
         return this;
-    },
-    // Retrieve new instance of cell class
-    getNewCell: function(cellDate, scopeDate)
+    };
+
+    /**
+     * Retrieve data value
+     * 
+     * @param key string
+     * @returns JustCalendar
+     */
+    this.getData = function(key) {
+        return this.data[key];
+    };
+
+    /**
+     * Retrieve new instance of cell
+     * 
+     * @param cellDate Date
+     * @param scopeDate Date
+     * @returns {JustCalendarCell}
+     */
+    this.getNewCell = function(cellDate, scopeDate)
     {
         return new JustCalendarCell({
             calendarInstance: this,
@@ -69,9 +108,14 @@ var JustCalendar = Class.create({
             scopeDate:   new Date(scopeDate.getTime()),
             onRender:    this.options.onCellRender
         });
-    },
-    // Render calendar view
-    render: function()
+    };
+    
+    /**
+     * Render calendar view
+     * 
+     * @returns {JustCalendarCell}
+     */
+    this.render = function()
     {
         var container = this.options.container;
         while (container.hasChildNodes()) {
@@ -89,19 +133,40 @@ var JustCalendar = Class.create({
         table.appendChild(tr);
         table.setAttribute('class', 'jajc-calendar-wrapper');
         container.appendChild(table);
-    },
-    previous:function()
+        return this;
+    };
+
+    /**
+     * Switch to previous moth
+     * 
+     * @returns {JustCalendarCell}
+     */
+    this.previous = function()
     {
         this.date.setMonth(this.date.getMonth() - this.options.calendars);
-        this.render();
-    },
-    next:function()
+        return this.render();
+    };
+
+    /**
+     * Switch to next month
+     * 
+     * @returns {JustCalendarCell}
+     */
+    this.next = function()
     {
         this.date.setMonth(this.date.getMonth() + this.options.calendars);
-        this.render();
-    },
-    // Render single calendar view
-    renderCalendar: function(date, showPrevBtn, showNextBtn)
+        return this.render();
+    };
+    
+    /**
+     * Render single calendar view
+     * 
+     * @param date Date
+     * @param showPrevBtn bool
+     * @param showNextBtn bool
+     * @returns {HTMLElement}
+     */
+    this.renderCalendar = function(date, showPrevBtn, showNextBtn)
     {
         var month = this.getMonthMatrix(date);
         // Initialize DOM elements
@@ -128,11 +193,20 @@ var JustCalendar = Class.create({
             this.options.onRender.apply(this, [table, date]);
         }
         return table;
-    },
-    renderHead: function(date, showPrevBtn, showNextBtn)
+    };
+
+    /**
+     * Render single calendar header 
+     * 
+     * @param date Date
+     * @param showPrevBtn bool
+     * @param showNextBtn bool
+     * @returns {HTMLElement}
+     */
+    this.renderHead = function(date, showPrevBtn, showNextBtn)
     {
-        showPrevBtn  = 'undefined' == typeof showPrevBtn ? true : showPrevBtn;
-        showNextBtn  = 'undefined' == typeof showNextBtn ? true : showNextBtn;
+        showPrevBtn  = ('undefined' == typeof showPrevBtn ? true : showPrevBtn);
+        showNextBtn  = ('undefined' == typeof showNextBtn ? true : showNextBtn);
 
         var thead    = document.createElement('thead');
         var firstTr  = document.createElement('tr');
@@ -174,17 +248,28 @@ var JustCalendar = Class.create({
         thead.appendChild(secondTr);
 
         return thead;
-    },
-    // Date of begin render
-    getStartDate: function()
+    };
+    
+    /**
+     * Date of begin rendering
+     * 
+     * @returns {Date}
+     */
+    this.getStartDate = function()
     {
         if (!this.date) {
             this.date = this.options.startDate || new Date()
         }
         return this.date;
-    },
-    // Retrieve month data
-    getMonthMatrix: function(startDate)
+    };
+    
+    /**
+     * Retrieve month data
+     * 
+     * @param startDate Date
+     * @returns {Object}
+     */
+    this.getMonthMatrix = function(startDate)
     {
         // Clone date
         var date = new Date(startDate.getTime());
@@ -211,27 +296,43 @@ var JustCalendar = Class.create({
         }
         return month;
     }
-});
+    
+    /**
+     * Call constructor
+     */
+    this.constructor.apply(this, arguments);
+};
 
 
-// Renderer for calendar cell
-var JustCalendarCell = Class.create({
-    options:null,
-    defaults: {
-        calendarInstance: null,
-        cellDate:         null,
-        scopeDate:        null,
-        onRender:         function(container, cellDate, scopeDate) {}
-    },
-    inScope:false,
-    element:null, // Related DOM element
-    // Class constructor
-    initialize:  function(options)
+/**
+ * Renderer for calendar cell
+ * 
+ * @constructor
+ */
+var JustCalendarCell = function()
+{
+    /**
+     * Class constructor
+     * @param options {Object}
+     */
+    this.constructor = function(options)
     {
-        this.options = {};
-        Object.extend(this.options, this.defaults);
+        // If the day is in current month scope
+        this.inScope  = false;
+        this.options  = null;
+        this.options = {
+            calendarInstance: null,
+            cellDate:         null,
+            scopeDate:        null,
+            onRender:         function(container, cellDate, scopeDate) {}
+        };
+        // DOM element for cell
+        this.element = null;
+        
         if (options) {
-            Object.extend(this.options, options);
+            for (var property in options) {
+                this.options[property] = options[property];
+            }
         }
         var cellDate  = this.options.cellDate;
         var scopeDate = this.options.scopeDate;
@@ -244,41 +345,79 @@ var JustCalendarCell = Class.create({
         if (cellDate.getMonth() == scopeDate.getMonth()) {
             this.inScope = true;
         }
-    },
-    setData:function(key, value) {
+    };
+
+    /**
+     * Set data
+     * 
+     * @param key {String}
+     * @param value {*}
+     * @returns {JustCalendarCell}
+     */
+    this.setData = function(key, value) {
         this.options.calendarInstance.setData(key, value);
         return this;
-    },
-    getData:function(key) {
+    };
+
+    /**
+     * Retrieve data
+     * 
+     * @param key
+     * @returns {*}
+     */
+    this.getData = function(key) {
         return this.options.calendarInstance.getData(key);
-    },
-    // Retrieve cell date
-    getDate: function ()
+    };
+
+    /**
+     * Retrieve cell date
+     * 
+     * @returns {Date}
+     */
+    this.getDate = function ()
     {
         return this.options.cellDate;
-    },
-    // Retrieve scope date
-    getScopeDate: function ()
+    };
+    
+    /**
+     * Retrieve scope date
+     * 
+     * @returns {Date}
+     */
+    this.getScopeDate = function ()
     {
         return this.options.scopeDate;
-    },
-    // Render day
-    render: function ()
+    };
+    
+    /**
+     * Render cell element
+     * 
+     * @returns {HTMLElement}
+     */
+    this.render = function ()
     {
-        var container = document.createElement('div');
-        var span      = document.createElement('span');
-
-        this.element = container;
-        if (this.inScope) {
-            container.setAttribute('class', 'scope')
+        if (!this.element) {
+            var container = document.createElement('div');
+            var span      = document.createElement('span');
+    
+            this.element = container;
+            if (this.inScope) {
+                container.setAttribute('class', 'scope')
+            }
+            span.innerHTML = this.getDate().getDate().toString();
+            container.appendChild(span);
+    
+            if (this.options.onRender instanceof Function) {
+                this.options.onRender.apply(this, [container, this.getDate(), this.getScopeDate()]);
+            }
+            this.element = container;
         }
-        span.innerHTML = this.getDate().getDate();
-        container.appendChild(span);
 
-        if (this.options.onRender instanceof Function) {
-            this.options.onRender.apply(this, [container, this.getDate(), this.getScopeDate()]);
-        }
+        return this.element;
+    };
 
-        return container;
-    }
-});
+    /**
+     * Call constructor
+     */
+    this.constructor.apply(this, arguments);
+};
