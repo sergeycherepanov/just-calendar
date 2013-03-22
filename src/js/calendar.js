@@ -1,10 +1,15 @@
 /**
  * Just Another Javascript Calendar
  *
- * @copyright: Copyright (c) 2012 Sergey Cherepanov. (http://www.cherepanov.org.ua)
+ * @copyright: Copyright (c) 2013 Sergey Cherepanov. (http://www.cherepanov.org.ua)
  * @license:   http://www.gnu.org/licenses/gpl.html GNU GENERAL PUBLIC LICENSE v3.0
  */
 
+/**
+ * Exception class
+ * 
+ * @constructor
+ */
 var JustCalendarException = function() 
 {
     /**
@@ -31,11 +36,17 @@ var JustCalendarException = function()
     this.constructor.apply(this, arguments);
 };
 
+/**
+ * Widget renderer
+ * 
+ * @constructor
+ */
 var JustCalendar = function()
 {
     /**
      * Class constructor
-     * @param options array
+     * 
+     * @param options {Array}
      */
     this.constructor = function(options)
     {
@@ -74,9 +85,9 @@ var JustCalendar = function()
     /**
      * Set data value
      * 
-     * @param key string
-     * @param value mixed
-     * @returns JustCalendar
+     * @param key {String}
+     * @param value {*}
+     * @returns {JustCalendar}
      */
     this.setData = function(key, value) {
         this.data[key] = value;
@@ -86,8 +97,8 @@ var JustCalendar = function()
     /**
      * Retrieve data value
      * 
-     * @param key string
-     * @returns JustCalendar
+     * @param key {String}
+     * @returns {JustCalendar}
      */
     this.getData = function(key) {
         return this.data[key];
@@ -96,8 +107,8 @@ var JustCalendar = function()
     /**
      * Retrieve new instance of cell
      * 
-     * @param cellDate Date
-     * @param scopeDate Date
+     * @param cellDate {Date}
+     * @param scopeDate {Date}
      * @returns {JustCalendarCell}
      */
     this.getNewCell = function(cellDate, scopeDate)
@@ -161,7 +172,7 @@ var JustCalendar = function()
     /**
      * Render single calendar view
      * 
-     * @param date Date
+     * @param date {Date}
      * @param showPrevBtn bool
      * @param showNextBtn bool
      * @returns {HTMLElement}
@@ -198,7 +209,7 @@ var JustCalendar = function()
     /**
      * Render single calendar header 
      * 
-     * @param date Date
+     * @param date {Date}
      * @param showPrevBtn bool
      * @param showNextBtn bool
      * @returns {HTMLElement}
@@ -266,20 +277,22 @@ var JustCalendar = function()
     /**
      * Retrieve month data
      * 
-     * @param startDate Date
+     * @param startDate {Date}
      * @returns {Object}
      */
     this.getMonthMatrix = function(startDate)
     {
+        var month = {};
         // Clone date
         var date = new Date(startDate.getTime());
         // Reset to first day of month
         date.setDate(1);
+        
         if (date.getDay() > 0) {
             // Reset to first day of week
             date.setDate(date.getDate() - date.getDay());
         }
-        var month = {};
+        
         for (var week = 0; week < 6; week++) {
             if (!month[week]) {
                 month[week] = {}
@@ -317,25 +330,26 @@ var JustCalendarCell = function()
      */
     this.constructor = function(options)
     {
+        // DOM element for cell
+        this.element  = null;
         // If the day is in current month scope
         this.inScope  = false;
-        this.options  = null;
-        this.options = {
+        this.options  = {
             calendarInstance: null,
             cellDate:         null,
             scopeDate:        null,
             onRender:         function(container, cellDate, scopeDate) {}
         };
-        // DOM element for cell
-        this.element = null;
         
         if (options) {
             for (var property in options) {
                 this.options[property] = options[property];
             }
         }
+        
         var cellDate  = this.options.cellDate;
         var scopeDate = this.options.scopeDate;
+        
         if (!cellDate || !cellDate instanceof Date) {
             throw new JustCalendarException("Cell Date is not defined or incorrect!");
         }
@@ -397,16 +411,16 @@ var JustCalendarCell = function()
     this.render = function ()
     {
         if (!this.element) {
-            var container = document.createElement('div');
-            var span      = document.createElement('span');
-    
-            this.element = container;
+            var container  = document.createElement('div');
+            var span       = document.createElement('span');
+            
+            span.innerHTML = this.getDate().getDate().toString();
+            container.appendChild(span);
+            
             if (this.inScope) {
                 container.setAttribute('class', 'scope')
             }
-            span.innerHTML = this.getDate().getDate().toString();
-            container.appendChild(span);
-    
+            
             if (this.options.onRender instanceof Function) {
                 this.options.onRender.apply(this, [container, this.getDate(), this.getScopeDate()]);
             }
