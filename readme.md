@@ -7,16 +7,13 @@
 ### Usage
 
 Create html container for new widget:  
-```html
+```html 
 <div id="calendar-widget"></div>
 ```
 
 Initialize and render new widget:  
 ```javascript
-var calendarWidget = new JustCalendar({
-    container: document.getElementById('calendar-widget'),
-    startDate: new Date()
-});
+var calendarWidget = new JustCalendar({container: document.getElementById('calendar-widget')});
 ```
 
 Demo: http://www.cherepanov.org.ua/just-calendar/examples/demo.html
